@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -10,31 +12,31 @@ import {
   FileBarChart2,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
+import { useSidebar } from "@/app/lib/sidebar-context";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-  { icon: Package, label: "Data Barang", id: "data-barang" },
-  { icon: ArrowDownToLine, label: "Barang Masuk", id: "barang-masuk" },
-  { icon: ArrowUpFromLine, label: "Barang Keluar", id: "barang-keluar" },
-  { icon: History, label: "Riwayat", id: "riwayat" },
-  { icon: FileBarChart2, label: "Laporan", id: "laporan" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: Package, label: "Data Barang", href: "/data-barang" },
+  { icon: ArrowDownToLine, label: "Barang Masuk", href: "/barang-masuk" },
+  { icon: ArrowUpFromLine, label: "Barang Keluar", href: "/barang-keluar" },
+  { icon: History, label: "Riwayat", href: "/riwayat" },
+  { icon: FileBarChart2, label: "Laporan", href: "/laporan" },
 ];
 
 export default function Sidebar() {
-  const [activeId, setActiveId] = useState("dashboard");
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { mobileOpen, setMobileOpen } = useSidebar();
 
-  return (
-    <aside
-      className={`
-        relative flex flex-col h-screen sticky top-0
-        bg-white border-r border-surface-200
-        transition-all duration-300 ease-in-out
-        ${collapsed ? "w-[72px]" : "w-[260px]"}
-      `}
-      style={{ boxShadow: "var(--shadow-xs)" }}
-    >
+  function handleNavClick() {
+    // Close mobile sidebar on navigation
+    setMobileOpen(false);
+  }
+
+  const sidebarContent = (
+    <>
       {/* Logo area */}
       <div className="flex items-center gap-3 px-5 h-[72px] border-b border-surface-200 shrink-0 overflow-hidden">
         <div
@@ -46,7 +48,7 @@ export default function Sidebar() {
           <Package className="w-5 h-5 text-white" />
         </div>
         {!collapsed && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in flex-1 min-w-0">
             <h1 className="text-[15px] font-semibold text-text-primary tracking-tight leading-tight">
               Tetap Usaha
             </h1>
@@ -55,6 +57,13 @@ export default function Sidebar() {
             </p>
           </div>
         )}
+        {/* Mobile close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center hover:bg-surface-50 transition-colors cursor-pointer ml-auto"
+        >
+          <X className="w-4 h-4 text-text-tertiary" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -62,13 +71,17 @@ export default function Sidebar() {
         <div className="space-y-1 stagger">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeId === item.id;
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
 
             return (
-              <button
-                key={item.id}
-                id={`nav-${item.id}`}
-                onClick={() => setActiveId(item.id)}
+              <Link
+                key={item.href}
+                id={`nav-${item.href.replace("/", "") || "dashboard"}`}
+                href={item.href}
+                onClick={handleNavClick}
                 className={`
                   animate-slide-left
                   group flex items-center gap-3 w-full px-3 h-10 rounded-[var(--radius-md)]
@@ -91,32 +104,11 @@ export default function Sidebar() {
                 {isActive && !collapsed && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-500 animate-count" />
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>
       </nav>
-
-      {/* Collapse toggle */}
-      <button
-        id="sidebar-toggle"
-        onClick={() => setCollapsed(!collapsed)}
-        className="
-          absolute -right-3 top-[80px]
-          w-6 h-6 rounded-full bg-white border border-surface-200
-          flex items-center justify-center
-          shadow-sm hover:shadow-md transition-all duration-200
-          hover:bg-brand-50 hover:border-brand-200 cursor-pointer
-          z-10
-        "
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {collapsed ? (
-          <ChevronRight className="w-3.5 h-3.5 text-text-tertiary" />
-        ) : (
-          <ChevronLeft className="w-3.5 h-3.5 text-text-tertiary" />
-        )}
-      </button>
 
       {/* Bottom section */}
       <div className="px-3 pb-4 border-t border-surface-200 pt-3 shrink-0">
@@ -136,6 +128,69 @@ export default function Sidebar() {
           )}
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={`
+          hidden lg:flex flex-col h-screen sticky top-0
+          bg-white border-r border-surface-200
+          transition-all duration-300 ease-in-out
+          ${collapsed ? "w-[72px]" : "w-[260px]"}
+        `}
+        style={{ boxShadow: "var(--shadow-xs)" }}
+      >
+        {sidebarContent}
+
+        {/* Collapse toggle (desktop only) */}
+        <button
+          id="sidebar-toggle"
+          onClick={() => setCollapsed(!collapsed)}
+          className="
+            absolute -right-3 top-[80px]
+            w-6 h-6 rounded-full bg-white border border-surface-200
+            flex items-center justify-center
+            shadow-sm hover:shadow-md transition-all duration-200
+            hover:bg-brand-50 hover:border-brand-200 cursor-pointer
+            z-10
+          "
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <ChevronRight className="w-3.5 h-3.5 text-text-tertiary" />
+          ) : (
+            <ChevronLeft className="w-3.5 h-3.5 text-text-tertiary" />
+          )}
+        </button>
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden animate-fade-in"
+            style={{ animationDuration: "150ms" }}
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside
+            className="
+              fixed inset-y-0 left-0 z-50 w-[280px]
+              bg-white border-r border-surface-200
+              flex flex-col
+              lg:hidden
+            "
+            style={{
+              boxShadow: "var(--shadow-lg)",
+              animation: "slide-in-left 0.25s ease-out",
+            }}
+          >
+            {sidebarContent}
+          </aside>
+        </>
+      )}
+    </>
   );
 }

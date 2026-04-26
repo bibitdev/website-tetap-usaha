@@ -63,6 +63,96 @@
 }
 
 /* ================================================================
+   DARK MODE OVERRIDES
+   ================================================================ */
+html.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  color-scheme: dark;
+
+  --color-brand-50: #1e293b;
+  --color-brand-100: #1e3a5f;
+  --color-brand-200: #1d4ed8;
+  --color-brand-300: #3b82f6;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #60a5fa;
+  --color-brand-700: #93c5fd;
+
+  --color-surface-0: #0f172a;
+  --color-surface-50: #1e293b;
+  --color-surface-100: #1e293b;
+  --color-surface-200: #334155;
+  --color-surface-300: #475569;
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #0f172a;
+
+  --color-status-safe: #22c55e;
+  --color-status-safe-bg: #052e16;
+  --color-status-safe-text: #4ade80;
+  --color-status-warning: #eab308;
+  --color-status-warning-bg: #422006;
+  --color-status-warning-text: #facc15;
+  --color-status-danger: #ef4444;
+  --color-status-danger-bg: #450a0a;
+  --color-status-danger-text: #f87171;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Override Tailwind's hardcoded bg-white */
+html.dark [class*="bg-white"] {
+  background-color: #1e293b !important;
+}
+html.dark [class*="bg-white\\/80"],
+html.dark [class*="bg-white/80"] {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* Override Tailwind's hardcoded border-surface and bg-surface classes */
+html.dark [class*="divide-surface-100"] > * + * {
+  border-color: #334155 !important;
+}
+html.dark [class*="divide-surface-200"] > * + * {
+  border-color: #334155 !important;
+}
+
+/* Dark body */
+html.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Dark scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+/* Fix gradient text staying dark */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: #f1f5f9;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+/* Chart tooltips in dark mode */
+html.dark .recharts-default-tooltip {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* ================================================================
    BASE STYLES
    ================================================================ */
 * {
@@ -75,6 +165,7 @@ body {
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ================================================================

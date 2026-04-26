@@ -31,7 +31,10 @@ const SEED_PRODUCTS: Product[] = [
 type Action =
   | { type: "STOCK_IN"; productId: string; quantity: number }
   | { type: "STOCK_OUT"; productId: string; quantity: number }
-  | { type: "HYDRATE"; products: Product[]; transactions: Transaction[] };
+  | { type: "HYDRATE"; products: Product[]; transactions: Transaction[] }
+  | { type: "ADD_PRODUCT"; product: Product }
+  | { type: "UPDATE_PRODUCT"; product: Product }
+  | { type: "DELETE_PRODUCT"; productId: string };
 
 interface State {
   products: Product[];
@@ -81,6 +84,23 @@ function inventoryReducer(state: State, action: Action): State {
       return { products, transactions: [tx, ...state.transactions] };
     }
 
+    case "ADD_PRODUCT":
+      return { ...state, products: [...state.products, action.product] };
+
+    case "UPDATE_PRODUCT":
+      return {
+        ...state,
+        products: state.products.map((p) =>
+          p.id === action.product.id ? action.product : p
+        ),
+      };
+
+    case "DELETE_PRODUCT":
+      return {
+        ...state,
+        products: state.products.filter((p) => p.id !== action.productId),
+      };
+
     default:
       return state;
   }
@@ -96,6 +116,9 @@ interface InventoryContextValue {
   openModal: (productId: string, type: "IN" | "OUT") => void;
   closeModal: () => void;
   applyStock: (quantity: number) => void;
+  addProduct: (data: Omit<Product, "id">) => void;
+  updateProduct: (product: Product) => void;
+  deleteProduct: (productId: string) => void;
   hydrated: boolean;
 }
 
@@ -158,6 +181,20 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     closeModal();
   }
 
+  // ── CRUD helpers ────────────────────────────────────────────
+  function addProduct(data: Omit<Product, "id">) {
+    const product: Product = { ...data, id: generateId() };
+    dispatch({ type: "ADD_PRODUCT", product });
+  }
+
+  function updateProduct(product: Product) {
+    dispatch({ type: "UPDATE_PRODUCT", product });
+  }
+
+  function deleteProduct(productId: string) {
+    dispatch({ type: "DELETE_PRODUCT", productId });
+  }
+
   return (
     <InventoryContext.Provider
       value={{
@@ -167,6 +204,9 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         openModal,
         closeModal,
         applyStock,
+        addProduct,
+        updateProduct,
+        deleteProduct,
         hydrated,
       }}
     >
