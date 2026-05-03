@@ -6,39 +6,37 @@ import {
   useReducer,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import type { Product, Transaction, ModalState } from "./types";
-import { generateId } from "./utils";
 
-/* ----------------------------------------------------------------
-   Initial seed data (used only when localStorage is empty)
-   ---------------------------------------------------------------- */
-const SEED_PRODUCTS: Product[] = [
-  { id: "1", name: 'MacBook Pro M3 14"', image: "/product-laptop.png", category: "Laptop", stock: 24, price: 28500000 },
-  { id: "2", name: "Galaxy S24 Ultra", image: "/product-smartphone.png", category: "Smartphone", stock: 18, price: 19999000 },
-  { id: "3", name: "AirPods Pro 2", image: "/product-earbuds.png", category: "Audio", stock: 5, price: 3799000 },
-  { id: "4", name: "Velocita GM87 Keyboard", image: "/product-keyboard.png", category: "Aksesoris", stock: 42, price: 1250000 },
-  { id: "5", name: "Logitech G Pro Mouse", image: "/product-mouse.png", category: "Aksesoris", stock: 0, price: 1850000 },
-  { id: "6", name: 'Samsung 4K Monitor 27"', image: "/product-monitor.png", category: "Monitor", stock: 8, price: 5400000 },
-  { id: "7", name: 'iPad Pro M4 11"', image: "/product-tablet.png", category: "Tablet", stock: 3, price: 17499000 },
-  { id: "8", name: "Kabel USB-C 100W", image: "/product-cable.png", category: "Aksesoris", stock: 150, price: 89000 },
-];
+/* ================================================================
+   Types
+   ================================================================ */
 
-/* ----------------------------------------------------------------
+// Transaction from API includes product details
+export interface RichTransaction extends Transaction {
+  productName: string;
+  productImage: string;
+  productCategory: string;
+  note?: string | null;
+}
+
+/* ================================================================
    Reducer
-   ---------------------------------------------------------------- */
+   ================================================================ */
 type Action =
-  | { type: "STOCK_IN"; productId: string; quantity: number }
-  | { type: "STOCK_OUT"; productId: string; quantity: number }
-  | { type: "HYDRATE"; products: Product[]; transactions: Transaction[] }
+  | { type: "HYDRATE"; products: Product[]; transactions: RichTransaction[] }
+  | { type: "SET_PRODUCTS"; products: Product[] }
+  | { type: "SET_TRANSACTIONS"; transactions: RichTransaction[] }
   | { type: "ADD_PRODUCT"; product: Product }
   | { type: "UPDATE_PRODUCT"; product: Product }
   | { type: "DELETE_PRODUCT"; productId: string };
 
 interface State {
   products: Product[];
-  transactions: Transaction[];
+  transactions: RichTransaction[];
 }
 
 function inventoryReducer(state: State, action: Action): State {
@@ -46,46 +44,14 @@ function inventoryReducer(state: State, action: Action): State {
     case "HYDRATE":
       return { products: action.products, transactions: action.transactions };
 
-    case "STOCK_IN": {
-      const products = state.products.map((p) =>
-        p.id === action.productId
-          ? { ...p, stock: p.stock + action.quantity }
-          : p
-      );
-      const tx: Transaction = {
-        id: generateId(),
-        productId: action.productId,
-        type: "IN",
-        quantity: action.quantity,
-        date: new Date().toISOString(),
-      };
-      return { products, transactions: [tx, ...state.transactions] };
-    }
+    case "SET_PRODUCTS":
+      return { ...state, products: action.products };
 
-    case "STOCK_OUT": {
-      const products = state.products.map((p) => {
-        if (p.id !== action.productId) return p;
-        const newStock = Math.max(0, p.stock - action.quantity);
-        return { ...p, stock: newStock };
-      });
-      const actualQty = (() => {
-        const p = state.products.find((p) => p.id === action.productId);
-        if (!p) return action.quantity;
-        return Math.min(action.quantity, p.stock);
-      })();
-      if (actualQty === 0) return state; // nothing to do
-      const tx: Transaction = {
-        id: generateId(),
-        productId: action.productId,
-        type: "OUT",
-        quantity: actualQty,
-        date: new Date().toISOString(),
-      };
-      return { products, transactions: [tx, ...state.transactions] };
-    }
+    case "SET_TRANSACTIONS":
+      return { ...state, transactions: action.transactions };
 
     case "ADD_PRODUCT":
-      return { ...state, products: [...state.products, action.product] };
+      return { ...state, products: [action.product, ...state.products] };
 
     case "UPDATE_PRODUCT":
       return {
@@ -99,6 +65,9 @@ function inventoryReducer(state: State, action: Action): State {
       return {
         ...state,
         products: state.products.filter((p) => p.id !== action.productId),
+        transactions: state.transactions.filter(
+          (tx) => tx.productId !== action.productId
+        ),
       };
 
     default:
@@ -106,30 +75,30 @@ function inventoryReducer(state: State, action: Action): State {
   }
 }
 
-/* ----------------------------------------------------------------
+/* ================================================================
    Context
-   ---------------------------------------------------------------- */
+   ================================================================ */
 interface InventoryContextValue {
   products: Product[];
-  transactions: Transaction[];
+  transactions: RichTransaction[];
   modal: ModalState;
   openModal: (productId: string, type: "IN" | "OUT") => void;
   closeModal: () => void;
-  applyStock: (quantity: number) => void;
-  addProduct: (data: Omit<Product, "id">) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (productId: string) => void;
+  applyStock: (quantity: number, note?: string) => Promise<void>;
+  addProduct: (data: Omit<Product, "id">) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
+  refreshProducts: () => Promise<void>;
   hydrated: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
 const InventoryContext = createContext<InventoryContextValue | null>(null);
 
-const STORAGE_PRODUCTS = "tetap-usaha-products";
-const STORAGE_TRANSACTIONS = "tetap-usaha-transactions";
-
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(inventoryReducer, {
-    products: SEED_PRODUCTS,
+    products: [],
     transactions: [],
   });
 
@@ -140,29 +109,45 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   });
 
   const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // ── Load from localStorage on mount ─────────────────────────
-  useEffect(() => {
+  // ── Fetch all products ────────────────────────────────────────
+  const refreshProducts = useCallback(async () => {
     try {
-      const rawP = localStorage.getItem(STORAGE_PRODUCTS);
-      const rawT = localStorage.getItem(STORAGE_TRANSACTIONS);
-      const products = rawP ? (JSON.parse(rawP) as Product[]) : SEED_PRODUCTS;
-      const transactions = rawT ? (JSON.parse(rawT) as Transaction[]) : [];
-      dispatch({ type: "HYDRATE", products, transactions });
-    } catch {
-      // corrupt data → keep seed
+      const res = await fetch("/api/products");
+      if (!res.ok) throw new Error("Gagal mengambil produk");
+      const products: Product[] = await res.json();
+      dispatch({ type: "SET_PRODUCTS", products });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
     }
-    setHydrated(true);
   }, []);
 
-  // ── Persist to localStorage on every change ─────────────────
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(STORAGE_PRODUCTS, JSON.stringify(state.products));
-    localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(state.transactions));
-  }, [state.products, state.transactions, hydrated]);
+  // ── Fetch all transactions ────────────────────────────────────
+  const refreshTransactions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/transactions");
+      if (!res.ok) throw new Error("Gagal mengambil transaksi");
+      const transactions: RichTransaction[] = await res.json();
+      dispatch({ type: "SET_TRANSACTIONS", transactions });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    }
+  }, []);
 
-  // ── Modal helpers ───────────────────────────────────────────
+  // ── Initial load ──────────────────────────────────────────────
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      await Promise.all([refreshProducts(), refreshTransactions()]);
+      setLoading(false);
+      setHydrated(true);
+    }
+    load();
+  }, [refreshProducts, refreshTransactions]);
+
+  // ── Modal helpers ─────────────────────────────────────────────
   function openModal(productId: string, type: "IN" | "OUT") {
     setModal({ open: true, productId, type });
   }
@@ -171,28 +156,94 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setModal({ open: false, productId: null, type: null });
   }
 
-  function applyStock(quantity: number) {
+  // ── Stock In / Out ────────────────────────────────────────────
+  async function applyStock(quantity: number, note?: string) {
     if (!modal.productId || !modal.type || quantity <= 0) return;
-    if (modal.type === "IN") {
-      dispatch({ type: "STOCK_IN", productId: modal.productId, quantity });
-    } else {
-      dispatch({ type: "STOCK_OUT", productId: modal.productId, quantity });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: modal.productId,
+          type: modal.type,
+          quantity,
+          note,
+        }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Gagal mencatat transaksi");
+      }
+      // Refresh both after stock change
+      await Promise.all([refreshProducts(), refreshTransactions()]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setLoading(false);
+      closeModal();
     }
-    closeModal();
   }
 
-  // ── CRUD helpers ────────────────────────────────────────────
-  function addProduct(data: Omit<Product, "id">) {
-    const product: Product = { ...data, id: generateId() };
-    dispatch({ type: "ADD_PRODUCT", product });
+  // ── CRUD helpers ──────────────────────────────────────────────
+  async function addProduct(data: Omit<Product, "id">) {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Gagal menambah produk");
+      }
+      const product: Product = await res.json();
+      dispatch({ type: "ADD_PRODUCT", product });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function updateProduct(product: Product) {
-    dispatch({ type: "UPDATE_PRODUCT", product });
+  async function updateProduct(product: Product) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Gagal mengupdate produk");
+      }
+      const updated: Product = await res.json();
+      dispatch({ type: "UPDATE_PRODUCT", product: updated });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function deleteProduct(productId: string) {
-    dispatch({ type: "DELETE_PRODUCT", productId });
+  async function deleteProduct(productId: string) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Gagal menghapus produk");
+      }
+      dispatch({ type: "DELETE_PRODUCT", productId });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -207,7 +258,10 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         addProduct,
         updateProduct,
         deleteProduct,
+        refreshProducts,
         hydrated,
+        loading,
+        error,
       }}
     >
       {children}
