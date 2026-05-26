@@ -60,8 +60,7 @@ function formatTime(iso: string) {
 }
 
 export default function StockPage({ type }: StockPageProps) {
-  const { products, transactions, openModal, applyStock, modal, closeModal } =
-    useInventory();
+  const { products, transactions, submitStock } = useInventory();
   const cfg = CONFIG[type];
   const Icon = cfg.icon;
 
@@ -126,7 +125,7 @@ export default function StockPage({ type }: StockPageProps) {
   }, [filteredTx]);
 
   // ── Submit handler ──────────────────────────────────────────
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedProductId) {
       setError("Pilih produk terlebih dahulu");
@@ -142,40 +141,14 @@ export default function StockPage({ type }: StockPageProps) {
       return;
     }
 
-    // Use the context's modal system to apply the stock change
-    openModal(selectedProductId, type);
-    // We need to apply immediately since we have the quantity
-    // Close any existing modal first, then dispatch directly
-    closeModal();
-
-    // Dispatch directly through context
-    if (type === "IN") {
-      // Trigger through modal flow
-      openModal(selectedProductId, type);
-      // Apply stock via the applyStock helper
-      setTimeout(() => {
-        applyStock(qty);
-        setSuccessMsg(
-          `${cfg.sign}${qty} ${selectedProduct?.name ?? "produk"} berhasil dicatat`
-        );
-        setQuantity("");
-        setSelectedProductId(null);
-        setError("");
-        setTimeout(() => setSuccessMsg(""), 3000);
-      }, 0);
-    } else {
-      openModal(selectedProductId, type);
-      setTimeout(() => {
-        applyStock(qty);
-        setSuccessMsg(
-          `${cfg.sign}${qty} ${selectedProduct?.name ?? "produk"} berhasil dicatat`
-        );
-        setQuantity("");
-        setSelectedProductId(null);
-        setError("");
-        setTimeout(() => setSuccessMsg(""), 3000);
-      }, 0);
-    }
+    setError("");
+    await submitStock(selectedProductId, type, qty);
+    setSuccessMsg(
+      `${cfg.sign}${qty} ${selectedProduct?.name ?? "produk"} berhasil dicatat`
+    );
+    setQuantity("");
+    setSelectedProductId(null);
+    setTimeout(() => setSuccessMsg(""), 3000);
   }
 
   return (

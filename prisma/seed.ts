@@ -1,9 +1,10 @@
 /**
- * Seed script — populate the database with initial products
+ * Seed script — populate the database with initial products + admin user
  * Run: npx tsx prisma/seed.ts
  */
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../app/generated/prisma/client.js";
+import { hashSync } from "bcryptjs";
 
 const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./dev.db" });
 const prisma = new PrismaClient({ adapter });
@@ -22,7 +23,20 @@ const SEED_PRODUCTS = [
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Clear existing data first
+  // ─── Seed admin user (upsert — safe to re-run) ────────────────────────────
+  const hashedPassword = hashSync("admin123", 12);
+  await prisma.user.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: {
+      username: "admin",
+      password: hashedPassword,
+      role: "admin",
+    },
+  });
+  console.log("  ✓ Admin user (username: admin, password: admin123)");
+
+  // ─── Seed products ────────────────────────────────────────────────────────
   await prisma.transaction.deleteMany();
   await prisma.product.deleteMany();
 
@@ -31,7 +45,7 @@ async function main() {
     console.log(`  ✓ ${product.name}`);
   }
 
-  console.log(`✅ Seeded ${SEED_PRODUCTS.length} products.`);
+  console.log(`✅ Seeded ${SEED_PRODUCTS.length} products + 1 admin user.`);
 }
 
 main()

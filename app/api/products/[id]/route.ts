@@ -5,10 +5,25 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { getSession } from "@/app/lib/auth/session";
 
 type Params = { params: Promise<{ id: string }> };
 
+async function requireAuth(): Promise<NextResponse | null> {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json(
+      { error: "Unauthorized. Silakan login terlebih dahulu." },
+      { status: 401 }
+    );
+  }
+  return null;
+}
+
 export async function GET(_req: NextRequest, { params }: Params) {
+  const unauth = await requireAuth();
+  if (unauth) return unauth;
+
   const { id } = await params;
   try {
     const product = await prisma.product.findUnique({ where: { id } });
@@ -21,6 +36,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
+  const unauth = await requireAuth();
+  if (unauth) return unauth;
+
   const { id } = await params;
   try {
     const body = await req.json();
@@ -50,6 +68,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
+  const unauth = await requireAuth();
+  if (unauth) return unauth;
+
   const { id } = await params;
   try {
     await prisma.product.delete({ where: { id } });

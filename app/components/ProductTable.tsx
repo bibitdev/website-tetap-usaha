@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { Search, Filter, ArrowDownToLine, ArrowUpFromLine, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, ArrowDownToLine, ArrowUpFromLine, X, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { useInventory } from "@/app/lib/inventory-context";
 import { getStockStatus, statusConfig, formatRupiah } from "@/app/lib/utils";
 import type { StockStatus } from "@/app/lib/types";
@@ -300,9 +300,7 @@ export default function ProductTable() {
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-surface-50 border border-surface-200 shrink-0 relative">
-                          <Image src={product.image} alt={product.name} fill className="object-cover" sizes="40px" />
-                        </div>
+                        <ProductThumbnail src={product.image} name={product.name} />
                         <span className="text-[13px] font-medium text-text-primary">{product.name}</span>
                       </div>
                     </td>
@@ -391,6 +389,31 @@ export default function ProductTable() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   ProductThumbnail — handles missing / broken image gracefully
+   ================================================================ */
+function ProductThumbnail({ src, name }: { src: string; name: string }) {
+  const [error, setError] = useState(false);
+  const hasValidSrc = src && !error;
+
+  return (
+    <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-surface-50 border border-surface-200 shrink-0 relative flex items-center justify-center">
+      {hasValidSrc ? (
+        <Image
+          src={src}
+          alt={name}
+          fill
+          className="object-cover"
+          sizes="40px"
+          onError={() => setError(true)}
+        />
+      ) : (
+        <Package className="w-5 h-5 text-text-tertiary" />
+      )}
     </div>
   );
 }

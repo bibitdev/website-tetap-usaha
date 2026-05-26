@@ -4,8 +4,9 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { withAuth } from "@/app/lib/auth/api-guard";
 
-export async function GET() {
+export const GET = withAuth(async () => {
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
@@ -15,9 +16,9 @@ export async function GET() {
     console.error("[GET /api/products]", err);
     return NextResponse.json({ error: "Gagal mengambil data produk" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: NextRequest) => {
   try {
     const body = await req.json();
     const { name, image, category, stock, price } = body as {
@@ -47,4 +48,4 @@ export async function POST(req: NextRequest) {
     console.error("[POST /api/products]", err);
     return NextResponse.json({ error: "Gagal membuat produk" }, { status: 500 });
   }
-}
+});

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useTransition, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, ChevronDown, Menu } from "lucide-react";
+import { Bell, Search, ChevronDown, Menu, LogOut, User } from "lucide-react";
 import { useInventory } from "@/app/lib/inventory-context";
 import { getStockStatus } from "@/app/lib/utils";
 import CommandPalette from "./CommandPalette";
 import NotificationPanel from "./NotificationPanel";
 import ThemeToggle from "./ThemeToggle";
 import { useSidebar } from "@/app/lib/sidebar-context";
+import { logout } from "@/app/lib/auth/actions";
 
 /** Map route path → page title + subtitle */
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
@@ -30,6 +31,9 @@ export default function TopNav() {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const profileRef = useRef<HTMLDivElement>(null);
 
   // Alert count for bell badge
   const alertCount = useMemo(
@@ -49,6 +53,24 @@ export default function TopNav() {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [profileOpen]);
+
+  function handleLogout() {
+    setProfileOpen(false);
+    startTransition(async () => {
+      await logout();
+    });
+  }
 
   const { setMobileOpen } = useSidebar();
 
@@ -125,24 +147,60 @@ export default function TopNav() {
           {/* Divider */}
           <div className="h-8 w-px bg-surface-200" />
 
-          {/* Profile */}
-          <button
-            id="profile-btn"
-            className="flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-[var(--radius-lg)] hover:bg-surface-50 transition-colors cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-              <span className="text-[12px] font-semibold text-white">A</span>
-            </div>
-            <div className="hidden sm:block text-left">
-              <p className="text-[13px] font-medium text-text-primary leading-tight">
-                Admin
-              </p>
-              <p className="text-[11px] text-text-tertiary leading-tight">
-                Manager
-              </p>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-text-tertiary ml-1" />
-          </button>
+          {/* Profile Dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              id="profile-btn"
+              onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); setSearchOpen(false); }}
+              className="flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-[var(--radius-lg)] hover:bg-surface-50 transition-colors cursor-pointer"
+              aria-haspopup="true"
+              aria-expanded={profileOpen}
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
+                <span className="text-[12px] font-semibold text-white">A</span>
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-[13px] font-medium text-text-primary leading-tight">Admin</p>
+                <p className="text-[11px] text-text-tertiary leading-tight">Manager</p>
+              </div>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-text-tertiary ml-1 transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* Dropdown menu */}
+            {profileOpen && (
+              <div
+                className="absolute right-0 top-[calc(100%+8px)] w-52 rounded-[var(--radius-md)] bg-white border border-surface-200 overflow-hidden animate-fade-in"
+                style={{ boxShadow: "var(--shadow-lg)" }}
+                role="menu"
+              >
+                {/* User info */}
+                <div className="px-4 py-3 border-b border-surface-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-medium text-text-primary">Admin</p>
+                      <p className="text-[11px] text-text-tertiary">Administrator</p>
+                    </div>
+                  </div>
+                </div>
+                {/* Logout */}
+                <button
+                  id="logout-btn"
+                  onClick={handleLogout}
+                  disabled={isPending}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] text-status-danger hover:bg-status-danger-bg transition-colors cursor-pointer disabled:opacity-60"
+                  role="menuitem"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{isPending ? "Keluar..." : "Keluar"}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

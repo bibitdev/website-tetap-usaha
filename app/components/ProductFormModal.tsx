@@ -1,21 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { X, Package } from "lucide-react";
 import type { Product } from "@/app/lib/types";
+import ImageUpload from "@/app/components/upload/ImageUpload";
 
-/** Available product images the user can pick from */
-const AVAILABLE_IMAGES = [
-  { src: "/product-laptop.png", label: "Laptop" },
-  { src: "/product-smartphone.png", label: "Smartphone" },
-  { src: "/product-earbuds.png", label: "Audio" },
-  { src: "/product-keyboard.png", label: "Keyboard" },
-  { src: "/product-mouse.png", label: "Mouse" },
-  { src: "/product-monitor.png", label: "Monitor" },
-  { src: "/product-tablet.png", label: "Tablet" },
-  { src: "/product-cable.png", label: "Kabel" },
-];
+/** Fallback image used for new products with no image selected yet */
+const DEFAULT_IMAGE = "/product-laptop.png";
 
 interface ProductFormModalProps {
   open: boolean;
@@ -34,27 +25,29 @@ export default function ProductFormModal({
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState(AVAILABLE_IMAGES[0].src);
+  const [image, setImage] = useState(DEFAULT_IMAGE);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
   const isEdit = product !== null;
 
-  // Populate form when editing
+  // ── Populate form when editing ─────────────────────────────
   useEffect(() => {
     if (open && product) {
       setName(product.name);
       setCategory(product.category);
       setStock(product.stock.toString());
       setPrice(product.price.toString());
-      setImage(product.image);
+      // Use existing image, fallback to default if empty
+      setImage(product.image || DEFAULT_IMAGE);
       setErrors({});
     } else if (open) {
       setName("");
       setCategory("");
       setStock("0");
       setPrice("");
-      setImage(AVAILABLE_IMAGES[0].src);
+      setImage(DEFAULT_IMAGE);
       setErrors({});
     }
     if (open) setTimeout(() => nameRef.current?.focus(), 50);
@@ -76,15 +69,17 @@ export default function ProductFormModal({
 
   function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isSubmitting) return;
+    setIsSubmitting(true);
     onSubmit({
       ...(isEdit ? { id: product!.id } : {}),
       name: name.trim(),
       category: category.trim(),
       stock: parseInt(stock, 10),
       price: parseInt(price, 10),
-      image,
+      image: image || DEFAULT_IMAGE,
     });
+    setIsSubmitting(false);
     onClose();
   }
 
@@ -101,7 +96,7 @@ export default function ProductFormModal({
       <div
         className="
           fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-          w-full max-w-[480px] max-h-[90vh] overflow-y-auto
+          w-full max-w-[500px] max-h-[92vh] overflow-y-auto
           bg-white rounded-[var(--radius-lg)] border border-surface-200
           animate-fade-in
         "
@@ -131,6 +126,18 @@ export default function ProductFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
+          {/* Image Upload */}
+          <div>
+            <label className="block text-[13px] font-medium text-text-secondary mb-2">
+              Gambar Produk
+            </label>
+            <ImageUpload
+              value={image}
+              onChange={setImage}
+              disabled={isSubmitting}
+            />
+          </div>
+
           {/* Name */}
           <Field label="Nama Produk" error={errors.name}>
             <input
@@ -182,39 +189,6 @@ export default function ProductFormModal({
             </Field>
           </div>
 
-          {/* Image picker */}
-          <div>
-            <label className="block text-[13px] font-medium text-text-secondary mb-2">
-              Gambar Produk
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {AVAILABLE_IMAGES.map((img) => (
-                <button
-                  key={img.src}
-                  type="button"
-                  onClick={() => setImage(img.src)}
-                  className={`
-                    relative w-full aspect-square rounded-[var(--radius-md)] border-2 overflow-hidden
-                    transition-all cursor-pointer
-                    ${
-                      image === img.src
-                        ? "border-brand-500 ring-2 ring-brand-100"
-                        : "border-surface-200 hover:border-surface-300"
-                    }
-                  `}
-                >
-                  <Image
-                    src={img.src}
-                    alt={img.label}
-                    fill
-                    className="object-cover p-1.5"
-                    sizes="80px"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Actions */}
           <div className="flex items-center gap-2 pt-2">
             <button
@@ -232,17 +206,19 @@ export default function ProductFormModal({
             <button
               type="submit"
               id="product-form-submit"
+              disabled={isSubmitting}
               className="
                 flex-1 h-10 rounded-[var(--radius-md)]
                 text-[13px] font-semibold text-white
                 transition-all cursor-pointer
                 hover:shadow-md active:scale-[0.98]
+                disabled:opacity-60 disabled:cursor-not-allowed
               "
               style={{
                 background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
               }}
             >
-              {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
+              {isSubmitting ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah Produk"}
             </button>
           </div>
         </form>

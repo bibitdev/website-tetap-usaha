@@ -85,6 +85,8 @@ interface InventoryContextValue {
   openModal: (productId: string, type: "IN" | "OUT") => void;
   closeModal: () => void;
   applyStock: (quantity: number, note?: string) => Promise<void>;
+  /** Submit a stock transaction directly without going through the modal state. */
+  submitStock: (productId: string, type: "IN" | "OUT", quantity: number, note?: string) => Promise<void>;
   addProduct: (data: Omit<Product, "id">) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
@@ -185,6 +187,33 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // ── Direct stock submission (no modal state dependency) ────
+  async function submitStock(
+    productId: string,
+    type: "IN" | "OUT",
+    quantity: number,
+    note?: string
+  ) {
+    if (!productId || !type || quantity <= 0) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, type, quantity, note }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error ?? "Gagal mencatat transaksi");
+      }
+      await Promise.all([refreshProducts(), refreshTransactions()]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // ── CRUD helpers ──────────────────────────────────────────────
   async function addProduct(data: Omit<Product, "id">) {
     setLoading(true);
@@ -255,6 +284,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         openModal,
         closeModal,
         applyStock,
+        submitStock,
         addProduct,
         updateProduct,
         deleteProduct,
