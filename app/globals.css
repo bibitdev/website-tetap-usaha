@@ -69,6 +69,7 @@ html.dark {
   --background: #0f172a;
   --foreground: #f1f5f9;
   color-scheme: dark;
+  color: #f1f5f9;
 
   --color-brand-50: #1e293b;
   --color-brand-100: #1e3a5f;
@@ -105,6 +106,86 @@ html.dark {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
 }
+
+/* ================================================================
+   DARK MODE — TEXT COLOR OVERRIDES
+   ================================================================ */
+
+/* Tailwind utility text classes — force override */
+html.dark .text-text-primary { color: #f1f5f9 !important; }
+html.dark .text-text-secondary { color: #94a3b8 !important; }
+html.dark .text-text-tertiary { color: #64748b !important; }
+
+/* Headings */
+html.dark h1, html.dark h2, html.dark h3,
+html.dark h4, html.dark h5, html.dark h6 {
+  color: #f1f5f9;
+}
+
+/* Table */
+html.dark th { color: #64748b !important; }
+html.dark td { color: #e2e8f0; }
+
+/* Prices (font-mono) */
+html.dark .font-mono { color: #cbd5e1 !important; }
+
+/* ── Sidebar nav items ── */
+/* Inactive nav items: make label clearly visible */
+html.dark nav a.text-text-secondary {
+  color: #94a3b8 !important;
+}
+html.dark nav a.text-text-secondary:hover {
+  color: #e2e8f0 !important;
+}
+/* Active nav item: bright blue text on subtle blue bg */
+html.dark nav a.bg-brand-50.text-brand-600 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+html.dark nav a.bg-brand-50.text-brand-600 svg {
+  color: #60a5fa !important;
+}
+/* Sidebar title */
+html.dark aside h1 { color: #f1f5f9 !important; }
+html.dark aside .text-text-tertiary { color: #475569 !important; }
+html.dark aside .text-text-primary { color: #f1f5f9 !important; }
+html.dark aside .text-text-secondary { color: #94a3b8 !important; }
+
+/* ── TopNav ── */
+html.dark header h2 { color: #f1f5f9 !important; }
+html.dark header p { color: #64748b !important; }
+html.dark header .text-text-secondary { color: #94a3b8 !important; }
+html.dark header .text-text-tertiary { color: #64748b !important; }
+
+/* ── Buttons with border-surface-200 (Edit, Batal, etc.) ── */
+html.dark button.border.border-surface-200 {
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+  background-color: transparent !important;
+}
+html.dark button.border.border-surface-200:hover {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Tombol Hapus (bg-status-danger-bg) ── */
+html.dark button.bg-status-danger-bg {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ── Tombol Masuk (bg-status-safe-bg) ── */
+html.dark button.bg-status-safe-bg {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+/* ── KBD ── */
+html.dark kbd {
+  background-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── UPPERCASE labels ── */
+html.dark .uppercase.text-text-tertiary { color: #475569 !important; }
 
 /* Override Tailwind's hardcoded bg-white */
 html.dark [class*="bg-white"] {
@@ -799,3 +880,513 @@ html.dark .img-preset-btn {
   border-color: #334155;
 }
 html.dark .img-preset-btn:hover:not(:disabled) { border-color: #475569; }
+
+/* ================================================================
+   DARK MODE — COMPONENT OVERRIDES
+   (Fixes hardcoded bg-white & light-surface elements)
+   ================================================================ */
+
+/* ── Sidebar ── */
+html.dark aside {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+/* Sidebar collapse toggle button */
+html.dark #sidebar-toggle {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark #sidebar-toggle:hover {
+  background-color: #1e3a5f !important;
+  border-color: #3b82f6 !important;
+}
+
+/* ── TopNav header ── */
+html.dark header {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  border-color: #1e293b !important;
+}
+
+/* Search bar in TopNav */
+html.dark #global-search {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark #global-search:hover {
+  border-color: #475569 !important;
+}
+
+/* Notifications bell hover */
+html.dark #notifications-btn:hover {
+  background-color: #1e293b !important;
+}
+
+/* Profile button hover */
+html.dark #profile-btn:hover {
+  background-color: #1e293b !important;
+}
+
+/* Divider line */
+html.dark .h-8.w-px {
+  background-color: #334155 !important;
+}
+
+/* Profile dropdown panel */
+html.dark [role="menu"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark [role="menu"] [role="menuitem"]:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+html.dark [role="menu"] .border-b {
+  border-color: #334155 !important;
+}
+
+/* ── Summary Cards ── */
+html.dark #card-total,
+html.dark #card-masuk,
+html.dark #card-keluar {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark #card-total:hover,
+html.dark #card-masuk:hover,
+html.dark #card-keluar:hover {
+  border-color: #3b82f6 !important;
+}
+
+/* ── Product Table ── */
+html.dark .bg-white.rounded-\[var\(--radius-lg\)\] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Table header row border */
+html.dark table thead tr {
+  border-color: #334155 !important;
+}
+
+/* Table body rows */
+html.dark table tbody tr {
+  border-color: #1e293b !important;
+}
+html.dark table tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* Category badge in table */
+html.dark table .bg-surface-50 {
+  background-color: #334155 !important;
+}
+
+/* Action buttons Masuk / Keluar in table */
+html.dark table button[id^="masuk-"] {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+html.dark table button[id^="keluar-"] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Product thumbnail */
+html.dark .w-10.h-10.rounded-\[var\(--radius-sm\)\] {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+}
+
+/* Table footer */
+html.dark .border-t.border-surface-200 {
+  border-color: #334155 !important;
+}
+
+/* Pagination hover */
+html.dark .w-8.h-8.rounded-\[var\(--radius-sm\)\]:hover {
+  background-color: #334155 !important;
+}
+
+/* Filter dropdown */
+html.dark .w-\[260px\].bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .w-\[260px\].bg-white .border-b {
+  border-color: #334155 !important;
+}
+
+/* Filter category / status chips */
+html.dark .bg-surface-50.text-text-secondary.border-surface-200 {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── Notification Panel ── */
+html.dark .w-\[360px\].bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .w-\[360px\] .border-b {
+  border-color: #334155 !important;
+}
+html.dark .divide-surface-100 > * + * {
+  border-color: #334155 !important;
+}
+
+/* ── Command Palette ── */
+html.dark .max-w-\[520px\].bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .max-w-\[520px\] .border-b {
+  border-color: #334155 !important;
+}
+html.dark .max-w-\[520px\] .border-t {
+  border-color: #334155 !important;
+}
+
+/* Command palette footer bg */
+html.dark .bg-surface-50\/50 {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+/* Command palette kbd */
+html.dark .bg-surface-200.text-\[9px\] {
+  background-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+/* Command palette result active item */
+html.dark .bg-brand-50 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* ── Generic panel / dropdown bg-white ── */
+html.dark .absolute.bg-white,
+html.dark .fixed.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Hover on nav items, buttons */
+html.dark .hover\:bg-surface-50:hover {
+  background-color: #1e293b !important;
+}
+
+/* Active filter chip area */
+html.dark .bg-surface-50\/50 {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Table search input */
+html.dark #product-search {
+  color: #f1f5f9 !important;
+}
+
+/* Sidebar bottom user area hover */
+html.dark .px-3.py-2.rounded-\[var\(--radius-md\)\]:hover {
+  background-color: #1e293b !important;
+}
+
+/* Mobile close button on sidebar */
+html.dark .lg\:hidden.w-8.h-8:hover {
+  background-color: #1e293b !important;
+}
+
+/* ── Modals (StockModal & ProductFormModal) ── */
+/* Modal container bg-white */
+html.dark .max-w-\[400px\].bg-white,
+html.dark .max-w-\[500px\].bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Modal sticky header */
+html.dark .sticky.top-0.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Modal header border-b */
+html.dark .max-w-\[400px\] .border-b,
+html.dark .max-w-\[500px\] .border-b {
+  border-color: #334155 !important;
+}
+
+/* Modal input fields (bg-surface-50 inside form) */
+html.dark form .bg-surface-50 {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+html.dark form input {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+html.dark form input:focus {
+  border-color: #3b82f6 !important;
+}
+html.dark form input::placeholder {
+  color: #475569 !important;
+}
+
+/* Cancel button inside modal */
+html.dark form button[type="button"]:not([id]) {
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+html.dark form button[type="button"]:not([id]):hover {
+  background-color: #334155 !important;
+}
+
+/* Modal close button */
+html.dark #modal-close:hover,
+html.dark #product-form-close:hover {
+  background-color: #334155 !important;
+}
+
+/* ── DataBarangTable (similar structure to ProductTable) ── */
+html.dark .overflow-x-auto {
+  background-color: transparent;
+}
+
+/* Ensure any remaining bg-white panels turn dark */
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+/* Ensure surface-50 inputs are dark-friendly globally */
+html.dark .bg-surface-50 {
+  background-color: #1e293b !important;
+}
+html.dark .bg-surface-100 {
+  background-color: #1e293b !important;
+}
+
+/* Borders */
+html.dark .border-surface-100 {
+  border-color: #1e293b !important;
+}
+html.dark .border-surface-200 {
+  border-color: #334155 !important;
+}
+
+/* Hover surface-50 rows / items */
+html.dark .hover\:bg-surface-50\/60:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+/* ================================================================
+   DARK MODE — ADDITIONAL FIXES (StockPage, DataBarang, etc.)
+   ================================================================ */
+
+/* ── StockPage: group date sticky header ── */
+html.dark .bg-surface-50\/80 {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+}
+html.dark .sticky.bg-surface-50\/80,
+html.dark [class*="bg-surface-50/80"] {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+}
+
+/* ── StockPage: product selector dropdown (bg-white hardcoded) ── */
+/* The dropdown container */
+html.dark .absolute.top-full.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+/* Sticky search bar inside dropdown */
+html.dark .sticky.top-0.bg-white.z-10 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .sticky.top-0.border-b.border-surface-100.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+/* Dropdown item hover */
+html.dark .hover\:bg-surface-50.transition-colors.cursor-pointer.text-left:hover {
+  background-color: #334155 !important;
+}
+
+/* ── Category badge in DataBarang / ProductTable ── */
+html.dark span.bg-surface-50.text-text-secondary {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── Sidebar active nav dot ── */
+html.dark nav .bg-brand-500 {
+  background-color: #60a5fa !important;
+}
+
+/* ── Sidebar toggle collapse button ── */
+html.dark #sidebar-toggle .text-text-tertiary {
+  color: #64748b !important;
+}
+
+/* ── Input text & number fields globally ── */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark input[type="search"],
+html.dark textarea,
+html.dark select {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #475569 !important;
+}
+html.dark input:focus,
+html.dark textarea:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* ── Stock info box in modal (bg-surface-50) ── */
+html.dark .rounded-\[var\(--radius-md\)\].bg-surface-50 {
+  background-color: #0f172a !important;
+}
+html.dark .rounded-\[var\(--radius-md\)\].bg-surface-50 span {
+  color: #94a3b8 !important;
+}
+html.dark .rounded-\[var\(--radius-md\)\].bg-surface-50 span.font-semibold {
+  color: #f1f5f9 !important;
+}
+
+/* ── Quick action product selector button ── */
+html.dark button.bg-surface-50.border.border-surface-200 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+html.dark button.bg-surface-50.border.border-surface-200:hover {
+  border-color: #475569 !important;
+}
+
+/* ── Search bars (bg-surface-50 inside a div) ── */
+html.dark div.bg-surface-50.border.border-surface-200 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ── Transaction history row icons ── */
+html.dark .divide-y.divide-surface-100 > div {
+  border-color: #1e293b !important;
+}
+
+/* ── Final safety net: remaining light backgrounds ── */
+html.dark .bg-white { background-color: #1e293b !important; }
+html.dark .bg-surface-0 { background-color: #0f172a !important; }
+html.dark .bg-surface-50 { background-color: #1e293b !important; }
+html.dark .bg-surface-100 { background-color: #1e293b !important; }
+html.dark .border-surface-100 { border-color: #1e293b !important; }
+html.dark .border-surface-200 { border-color: #334155 !important; }
+
+/* ================================================================
+   DARK MODE — BRAND COLOR OVERRIDES
+   Tailwind v4 @theme inline compiles these at build time,
+   so we need explicit overrides for dark mode readability
+   ================================================================ */
+
+/* Brand text colors */
+html.dark .text-brand-600 { color: #60a5fa !important; }
+html.dark .text-brand-500 { color: #93c5fd !important; }
+html.dark .text-brand-400 { color: #bfdbfe !important; }
+html.dark .text-brand-300 { color: #dbeafe !important; }
+
+/* Brand backgrounds (active state) */
+html.dark .bg-brand-50  { background-color: rgba(59, 130, 246, 0.12) !important; }
+html.dark .bg-brand-100 { background-color: rgba(59, 130, 246, 0.18) !important; }
+
+/* Brand icon colors */
+html.dark .text-brand-500 { color: #60a5fa !important; }
+
+/* ── Sidebar: active nav item full fix ── */
+html.dark nav a.bg-brand-50 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+html.dark nav a.text-brand-600 {
+  color: #60a5fa !important;
+}
+html.dark nav a .text-brand-500 {
+  color: #60a5fa !important;
+}
+/* Active dot */
+html.dark nav .bg-brand-500.rounded-full {
+  background-color: #60a5fa !important;
+}
+
+/* ── Sidebar: inactive nav items readable ── */
+html.dark nav a {
+  color: #94a3b8;
+}
+html.dark nav a span {
+  color: inherit;
+}
+html.dark nav a:hover {
+  color: #e2e8f0;
+}
+
+/* ── Sidebar: user section ── */
+html.dark aside .text-text-primary { color: #f1f5f9 !important; }
+html.dark aside .text-text-secondary { color: #94a3b8 !important; }
+html.dark aside .text-text-tertiary { color: #475569 !important; }
+
+/* ── Tombol Edit di DataBarang ── */
+html.dark button[id^="edit-"] {
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+  background-color: transparent !important;
+}
+html.dark button[id^="edit-"]:hover {
+  background-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Tombol Hapus di DataBarang ── */
+html.dark button[id^="delete-"] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+html.dark button[id^="delete-"]:hover {
+  background-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+/* ── Delete confirm inline: "Hapus?" label, Ya, Batal ── */
+html.dark .text-text-tertiary.mr-1 {
+  color: #64748b !important;
+}
+
+/* ── Pagination active page button ── */
+html.dark .bg-brand-500.text-white {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* ── Filter active state ── */
+html.dark .border-brand-300.bg-brand-50.text-brand-600 {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+/* ── Active filter chips ── */
+html.dark .bg-brand-50.text-brand-600.border-brand-200 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* ── Logo icon in sidebar ── */
+html.dark aside .text-white { color: white !important; }
+
+/* ── General text fallback — ensure nothing is invisible ── */
+html.dark .text-text-primary { color: #f1f5f9 !important; }
+html.dark .text-text-secondary { color: #94a3b8 !important; }
+html.dark .text-text-tertiary { color: #64748b !important; }
