@@ -14,7 +14,7 @@ export default function ProductTable() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedStatuses, setSelectedStatuses] = useState<Set<StockStatus>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
 
   // ── Derive unique categories from products ──────────────────
   const categories = useMemo(() => {
