@@ -17,7 +17,7 @@ export const GET = withAuth(async () => {
     });
 
     // Shape matches the frontend Transaction type + product details
-    const data = transactions.map((tx) => ({
+    const data = transactions.map((tx: typeof transactions[number]) => ({
       id: tx.id,
       productId: tx.productId,
       productName: tx.product.name,
